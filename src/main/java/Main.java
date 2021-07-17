@@ -4,10 +4,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     private static final String PRINT_GREEN = "\033[92m";
@@ -23,6 +20,8 @@ public class Main {
         enterAltTermBuffer();
 
         JavaRDD<String> data = loadData();
+        DataAnalysis analysis = new DataAnalysis(data);
+        analysis.mean(DatasetColumn.TEMP);
 
         leaveAltTermBuffer();
     }
@@ -67,20 +66,17 @@ public class Main {
         for (int year : years) {
             System.out.println();
             System.out.println("Loading data from year: " + year);
-            File folder = new File("datasets/" + year);
 
-            for (File file : folder.listFiles()) {
-                JavaRDD<String> fileData = sparkContext.textFile(file.getPath());
+            JavaRDD<String> yearData = sparkContext.textFile("datasets/" + year + "/*.csv");
 
-                //Remove header
-                String header = fileData.first();
-                fileData = fileData.filter(line -> !line.equals(header));
+            //Remove header
+            String header = yearData.first();
+            yearData = yearData.filter(line -> !line.equals(header));
 
-                //Merge data
-                allData = allData.union(fileData);
-            }
+            //Merge data
+            allData = allData.union(yearData);
         }
-
+        System.out.println();
         return allData;
     }
 

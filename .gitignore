@@ -2,3 +2,4 @@ datasets/
 target/
 .idea/
 .DS_Store
+.run/
