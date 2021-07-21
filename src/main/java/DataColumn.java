@@ -1,4 +1,4 @@
-public enum DatasetColumn {
+public enum DataColumn {
     STATION(0),
     DATE(1),
     LATITUDE(2),
@@ -29,7 +29,7 @@ public enum DatasetColumn {
 
     public final int index;
 
-    private DatasetColumn(int index) {
+    private DataColumn(int index) {
         this.index =  index;
     }
 }

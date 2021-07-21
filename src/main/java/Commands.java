@@ -9,7 +9,7 @@ public class Commands {
 
     private DataAnalysis dataAnalysis;
     private String method = "";
-    private DatasetColumn column;
+    private DataColumn column;
     private HashSet<String> filter = new HashSet<>();;
 
 
@@ -36,7 +36,7 @@ public class Commands {
 
         try {
             this.method = command.split(" ")[0];
-            this.column = DatasetColumn.valueOf(command.split(" ")[1]);
+            this.column = DataColumn.valueOf(command.split(" ")[1]);
 
             if (command.contains("--filter")) {
                 String values = command.split("=")[1];
@@ -62,6 +62,9 @@ public class Commands {
             case "standard-deviation":
                 dataAnalysis.standardDeviation(this.column, this.filter);
                 break;
+            case "linear-regression":
+                String[] features = {"LATITUDE", "LONGITUDE", "ELEVATION"};
+                dataAnalysis.linearRegression(features,"TEMP");
             default:
                 printHelp();
         }

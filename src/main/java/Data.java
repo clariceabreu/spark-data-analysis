@@ -1,11 +1,14 @@
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Dataset {
+public class Data {
     private static final String PRINT_GREEN = "\033[92m";
     private static final String PRINT_RED = "\u001b[31m";
     private static final String PRINT_COLOR_END = "\033[0m";
@@ -73,5 +76,9 @@ public class Dataset {
         }
 
         return loadData(sparkContext, years);
+    }
+
+    public static Dataset<Row> createDataset(SparkSession sparkSession, JavaRDD<String> dataRDD) {
+        return sparkSession.createDataFrame(dataRDD, DataRow.class);
     }
 }
