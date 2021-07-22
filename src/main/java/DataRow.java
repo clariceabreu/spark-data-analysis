@@ -1,4 +1,4 @@
-import java.io.Serializable;
+import scala.Serializable;
 
 public class DataRow implements Serializable {
     private String station;
