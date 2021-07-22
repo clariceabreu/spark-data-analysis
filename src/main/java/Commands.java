@@ -63,12 +63,12 @@ public class Commands {
                 dataAnalysis.standardDeviation(this.column, this.filter);
                 break;
             case "linear-regression":
-                dataAnalysis.regression(DatasetColumn.DEWP, DatasetColumn.TEMP, this.filter);
+                dataAnalysis.regression(DatasetColumn.DEWP, DatasetColumn.TEMP, 5.0, this.filter);
+                break;
             default:
                 printHelp();
         }
     }
-
 
     private void printHelp() {
         System.out.println("Available commands:");

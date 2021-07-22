@@ -17,12 +17,12 @@ public class DataAnalysis {
     private final String PRINT_COLOR_END = "\033[0m";
     private final String CLEAR_LINE = "\033[2K";
 
-    private final String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
-
     private JavaRDD<String> data;
+    Comparator comparator;
 
     public DataAnalysis(JavaRDD<String> data) {
         this.data = data;
+        this.comparator = new Comparator();
     }
 
     public Double mean(DatasetColumn column, HashSet<String> filter) {
@@ -66,62 +66,27 @@ public class DataAnalysis {
         System.out.println("Result: " + PRINT_GREEN + result + PRINT_COLOR_END);
     }
 
-    public void regression(DatasetColumn columnToBasePrediction, DatasetColumn columnToPredict, HashSet<String> filter){
-       // List<Double> minMax = getMinAndMax(columnToBasePrediction);
+    public void regression(DatasetColumn columnToBasePrediction, DatasetColumn columnToPredict, Double observedValue, HashSet<String> filter){
         Double xMean = mean(columnToBasePrediction, filter);
         Double yMean = mean(columnToPredict, filter);
-        Double upperSum = sumValues(columnToBasePrediction, columnToPredict, yMean);
-        System.out.println(upperSum);
+        Double numerator = sumValues(columnToBasePrediction, columnToPredict, yMean);
+        Double denominator = sumValues(columnToBasePrediction, columnToBasePrediction, xMean);
+        Double b = numerator / denominator;
+        Double a = yMean - (b * xMean);
+        Double predicted = a + observedValue * b;
+        Double roundedA =  Math.round(a * 100.0) / 100.0;
+        Double roundedB =  Math.round(b * 100.0) / 100.0;
+
+        System.out.println("Regression function: " + PRINT_YELLOW +  "y = " + roundedA + " + " + roundedB + "x" + PRINT_COLOR_END);
+        System.out.println("Predicted value: " + PRINT_GREEN + predicted + PRINT_COLOR_END);
     }
 
     private Double sumValues(DatasetColumn column1, DatasetColumn column2, Double meanValue) {
-        String result = data.map(s -> s)
-                .reduce((x, y) -> {
-            String[] columns = x.split(regexp);
-            Double first = Double.parseDouble(columns[column1.index].replaceAll("\"", "").trim());
-            Double second = Double.parseDouble(columns[column2.index].replaceAll("\"", "").trim());
+        Comparator comparator = new Comparator();
 
-            Double sum = first + (second - meanValue);
+        Double result = data.map(s -> comparator.mapToDouble(s, column1, column2, meanValue)).reduce((x, y) -> comparator.sum(x, y));
 
-            columns[column1.index] = sum.toString();
-
-            return String.join(",",columns);
-        });
-
-        Double value = Double.parseDouble(result.split(regexp)[column1.index].replaceAll("\"", "").trim());
-        return  value;
-    }
-
-    private List<Double> getMinAndMax(DatasetColumn columnToBasePrediction) {
-        String min = data.reduce((x, y) -> {
-            String first = x.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim();
-            String second = x.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim();
-
-            if (Double.parseDouble(first) > Double.parseDouble(second)) {
-                return y;
-            } else {
-                return x;
-            }
-        });
-
-        String max = data.reduce((x, y) -> {
-            String first = x.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim();
-            String second = x.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim();
-
-            if (Double.parseDouble(first) > Double.parseDouble(second)) {
-                return  x;
-            } else {
-                return y;
-            }
-        });
-
-        double maxValue = Double.parseDouble(max.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim());
-        double minValue = Double.parseDouble(min.split(regexp)[columnToBasePrediction.index].replaceAll("\"", "").trim());
-
-        List<Double> maxMin = new ArrayList<>();
-        maxMin.add(minValue);
-        maxMin.add(maxValue);
-        return maxMin;
+        return  result;
     }
 
 
@@ -132,7 +97,7 @@ public class DataAnalysis {
         //Split line to get only data from a specific column, then removing quotation marks and white spaces
         JavaRDD<Vector> columnData = data
                 .filter(s ->
-                    filter.size() == 0 || filter.contains(s.split(regexp)[0].replaceAll("\"", "").trim())
+                        filter.size() == 0 || filter.contains(s.split(regexp)[0].replaceAll("\"", "").trim())
                 )
                 .map(s -> {
                     try {
@@ -146,3 +111,4 @@ public class DataAnalysis {
         return  columnData;
     }
 }
+
