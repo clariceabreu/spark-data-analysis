@@ -62,6 +62,8 @@ public class Commands {
             case "standard-deviation":
                 dataAnalysis.standardDeviation(this.column, this.filter);
                 break;
+            case "linear-regression":
+                dataAnalysis.regression(DatasetColumn.DEWP, DatasetColumn.TEMP, this.filter);
             default:
                 printHelp();
         }

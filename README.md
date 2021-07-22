@@ -18,5 +18,5 @@ export SPARK_LOCAL_IP="127.0.0.1"
 
 3. Compile and run
 ```bash
-mvn clean compile exec:jav
+mvn clean compile exec:java
 ```
