@@ -4,6 +4,7 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.stat.MultivariateStatisticalSummary;
 import org.apache.spark.mllib.stat.Statistics;
+import org.codehaus.janino.Java;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,26 +68,39 @@ public class DataAnalysis {
     }
 
     public void regression(DatasetColumn columnToBasePrediction, DatasetColumn columnToPredict, Double observedValue, HashSet<String> filter){
-        Double xMean = mean(columnToBasePrediction, filter);
-        Double yMean = mean(columnToPredict, filter);
-        Double numerator = sumValues(columnToBasePrediction, columnToPredict, yMean);
-        Double denominator = sumValues(columnToBasePrediction, columnToBasePrediction, xMean);
-        Double b = numerator / denominator;
-        Double a = yMean - (b * xMean);
-        Double predicted = a + observedValue * b;
+        //Calculates summations
+        Comparator comparator = new Comparator();
+        Double sumXY = data.map(s -> comparator.multiplyColumns(s, columnToBasePrediction, columnToPredict)).reduce((x, y) -> comparator.sum(x, y));
+        Double sumXX = data.map(s -> comparator.squareColumn(s, columnToBasePrediction)).reduce((x, y) -> comparator.sum(x, y));
+        Double sumX = data.map(s -> comparator.mapColumn(s, columnToBasePrediction)).reduce((x, y) -> comparator.sum(x, y));
+        Double sumY = data.map(s -> comparator.mapColumn(s, columnToBasePrediction)).reduce((x, y) -> comparator.sum(x, y));
+
+        //Calculates a numerator and denominator
+        Double n = (double) data.count();
+        Double aNumerator = sumXY - (sumX * sumY)/n;
+        Double aDenominator = sumXX - (sumX * sumX)/n;
+
+        //Calculates a and b
+        Double a = aNumerator / aDenominator;
+        Double b = (sumY/n) - a * (sumX/n);
         Double roundedA =  Math.round(a * 100.0) / 100.0;
         Double roundedB =  Math.round(b * 100.0) / 100.0;
 
-        System.out.println("Regression function: " + PRINT_YELLOW +  "y = " + roundedA + " + " + roundedB + "x" + PRINT_COLOR_END);
+        //Predict value
+        Double predicted = a + observedValue * b;
+
+        System.out.println("Regression function: " + PRINT_YELLOW +  "y = " + roundedA + "x + " + roundedB + PRINT_COLOR_END);
         System.out.println("Predicted value: " + PRINT_GREEN + predicted + PRINT_COLOR_END);
-    }
 
-    private Double sumValues(DatasetColumn column1, DatasetColumn column2, Double meanValue) {
-        Comparator comparator = new Comparator();
-
-        Double result = data.map(s -> comparator.mapToDouble(s, column1, column2, meanValue)).reduce((x, y) -> comparator.sum(x, y));
-
-        return  result;
+        //Display chart with linear regression function and observed values
+        Chart chart = new Chart();
+        chart.setxData(getColumnDataAsList(columnToBasePrediction, filter));
+        chart.setyData(getColumnDataAsList(columnToPredict, filter));
+        chart.setFunctionA(a);
+        chart.setFunctionB(b);
+        chart.setxLabel(columnToBasePrediction.toString());
+        chart.setyLabel(columnToPredict.toString());
+        chart.showChart();
     }
 
 
@@ -109,6 +123,31 @@ public class DataAnalysis {
                 });
 
         return  columnData;
+    }
+
+    private List<Double> getColumnDataAsList(DatasetColumn column, HashSet<String> filter) {
+        //Regex to split csv columns (prevent from splitting columns that have comma in its content into two columns)
+        String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
+
+        //Split line to get only data from a specific column, then removing quotation marks and white spaces
+        JavaRDD<Double> columnData = data
+                .filter(s ->
+                        filter.size() == 0 || filter.contains(s.split(regexp)[0].replaceAll("\"", "").trim())
+                )
+                .map(s -> {
+                    try {
+                        String newValue = s.split(regexp)[column.index].replaceAll("\"", "").trim();
+                        return Double.parseDouble(newValue);
+                    } catch (Exception e) {
+                        return 0D;
+                    }
+                });
+
+        return columnData.collect();
+    }
+
+    private void displayChart(Double a, Double b) {
+
     }
 }
 

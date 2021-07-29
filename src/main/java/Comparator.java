@@ -30,6 +30,14 @@ public class Comparator implements Serializable {
         return x + y;
     }
 
+    public Double squareColumn(String x, DatasetColumn column) {
+        String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
+
+        Double value = Double.parseDouble(x.split(regexp)[column.index].replaceAll("\"", "").trim());
+
+        return value * value;
+    }
+
     public Double mapToDouble(String x, DatasetColumn column1, DatasetColumn column2, Double meanValue){
         String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
         String[] columns_1 = x.split(regexp);
@@ -38,5 +46,21 @@ public class Comparator implements Serializable {
         Double result = first1 * (second1 - meanValue);
 
         return result;
+    }
+
+    public Double mapColumn(String x, DatasetColumn column){
+        String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
+
+        Double value = Double.parseDouble(x.split(regexp)[column.index].replaceAll("\"", "").trim());
+
+        return value;
+    }
+
+    public Double multiplyColumns(String x, DatasetColumn column1, DatasetColumn column2) {
+        String regexp = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
+        Double value1 = Double.parseDouble(x.split(regexp)[column1.index].replaceAll("\"", "").trim());
+        Double value2 = Double.parseDouble(x.split(regexp)[column2.index].replaceAll("\"", "").trim());
+
+        return value1 * value2;
     }
 }
