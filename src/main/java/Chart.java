@@ -24,10 +24,6 @@ public class Chart extends JFrame {
     private String xLabel;
     private String yLabel;
 
-    public Chart() {
-
-    }
-
     public void showChart(Double observedValue, Double predictedValue) {
         XYDataset dataset = createDataset(observedValue, predictedValue);
 

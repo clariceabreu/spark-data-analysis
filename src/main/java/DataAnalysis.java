@@ -10,7 +10,6 @@ public class DataAnalysis {
     private final String PRINT_RED = "\u001b[31m";
     private final String PRINT_COLOR_END = "\033[0m";
     private final String CLEAR_LINE = "\033[2K";
-    private final String RETURN_LINE = "\r";
 
     private JavaRDD<String> data;
 
@@ -19,13 +18,13 @@ public class DataAnalysis {
     }
 
     public Double mean(DatasetColumn column, HashSet<String> filter) {
-        System.out.println();
         System.out.println("Calculating mean...");
 
         Mapper mapper = new Mapper();
         JavaRDD<Vector> columnData = mapper.getColumnData(data, column, filter);
         if (columnData.count() == 0) {
-            System.out.print(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println();
             return null;
         }
 
@@ -41,13 +40,13 @@ public class DataAnalysis {
     }
 
     public void standardDeviation(DatasetColumn column, HashSet<String> filter) {
-        System.out.println();
         System.out.println("Calculating standard deviation...");
 
         Mapper mapper = new Mapper();
         JavaRDD<Vector> columnData = mapper.getColumnData(data, column, filter);
         if (columnData.count() == 0) {
-            System.out.print(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println();
             return;
         }
 
@@ -62,16 +61,16 @@ public class DataAnalysis {
     }
 
     public void regression(DatasetColumn columnToBasePrediction, DatasetColumn columnToPredict, Double observedValue, HashSet<String> filter){
-        System.out.println();
         System.out.println("Calculating linear regression...");
 
         //Filter data
         Mapper mapper = new Mapper();
-        JavaRDD<String> filteredData = data.filter(s -> mapper.filterData(s, filter));
-        Double n = (double) filteredData.count();
+        JavaRDD<String> filteredData  = data.filter(s -> mapper.filterData(s, filter));
 
+        Double n = (double) filteredData.count();
         if (n == 0D) {
-            System.out.print(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println(PRINT_RED + "Dataset selected is empty" + PRINT_COLOR_END);
+            System.out.println();
             return;
         }
 
@@ -97,8 +96,8 @@ public class DataAnalysis {
         Double predicted = a * observedValue + b;
         Double roundedPredicted =  Math.round(predicted * 100.0) / 100.0;
 
-        System.out.println();
-        System.out.print("Regression function: " + PRINT_YELLOW +  "y = " + roundedA + "x + " + roundedB + PRINT_COLOR_END + RETURN_LINE);
+        System.out.println(CLEAR_LINE);
+        System.out.println("Regression function: " + PRINT_YELLOW +  "y = " + roundedA + "x + " + roundedB + PRINT_COLOR_END);
         System.out.println("Predicted value: " + PRINT_GREEN + roundedPredicted + PRINT_COLOR_END);
 
         //Display chart with linear regression function and observed values
@@ -111,8 +110,10 @@ public class DataAnalysis {
         chart.setFunctionB(b);
         chart.setxLabel(columnToBasePrediction.toString());
         chart.setyLabel(columnToPredict.toString());
+        System.out.println(CLEAR_LINE);
         chart.showChart(observedValue, predicted);
         System.out.println(PRINT_GREEN + "Chart opened in another window" + PRINT_COLOR_END);
+        System.out.println();
     }
 }
 

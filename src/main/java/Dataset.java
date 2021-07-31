@@ -8,20 +8,23 @@ import java.util.Scanner;
 public class Dataset {
     private static final String PRINT_GREEN = "\033[92m";
     private static final String PRINT_RED = "\u001b[31m";
+    private static final String PRINT_CYAN = "\u001b[36m";
     private static final String PRINT_COLOR_END = "\033[0m";
 
     public static JavaRDD<String> loadData(JavaSparkContext sparkContext) {
         System.out.println("Enter the years to load the data. Write the years separated by ',' or use ':' to specify a time range.");
         System.out.println("For example:");
         System.out.println(PRINT_GREEN + "2010, 2015, 2018" + PRINT_COLOR_END + " -> loads data from the specified years");
-        System.out.println(PRINT_GREEN + "2010:2018" + PRINT_COLOR_END + " -> loads data from all years between 2010 and 2018 (including 2010 and 2018)");
+        System.out.println(PRINT_GREEN + "2010:2018" + PRINT_COLOR_END + " -> loads data from all years between 2010 and 2018 (including 2010 and 2018)" + PRINT_CYAN);
 
         Scanner scanner = new Scanner(System.in);
+        System.out.print("> ");
+        System.out.flush();
         String input = scanner.nextLine();
-
+        System.out.println(PRINT_COLOR_END);
         try {
             if (input.contains(",")) {
-                String[] inputSplit = input.trim().split(",");
+                String[] inputSplit = input.replaceAll(" ", "").split(",");
                 List<Integer> years = new ArrayList<>();
                 for (String year : inputSplit) {
                     years.add(Integer.parseInt(year));
@@ -48,7 +51,6 @@ public class Dataset {
     private static JavaRDD<String> loadData(JavaSparkContext sparkContext, List<Integer> years) {
         JavaRDD<String> allData = sparkContext.emptyRDD();
         for (int year : years) {
-            System.out.println();
             System.out.println("Loading data from year " + year + "...");
 
             JavaRDD<String> yearData = sparkContext.textFile("datasets/" + year + "/*.csv");
