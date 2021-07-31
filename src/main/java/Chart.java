@@ -12,8 +12,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.util.List;
 
 public class Chart extends JFrame {
@@ -29,8 +28,8 @@ public class Chart extends JFrame {
 
     }
 
-    public void showChart() {
-        XYDataset dataset = createDataset();
+    public void showChart(Double observedValue, Double predictedValue) {
+        XYDataset dataset = createDataset(observedValue, predictedValue);
 
         JFreeChart chart = createChart(dataset);
 
@@ -46,12 +45,13 @@ public class Chart extends JFrame {
         setVisible(true);
     }
 
-    private XYDataset createDataset() {
+    private XYDataset createDataset(Double observedValue, Double predictedValue) {
         XYSeries data = new XYSeries("Data");
 
         double minX = this.xData.get(0);
         double maxX = this.xData.get(0);
         for (int i = 0; i < this.xData.size(); i++) {
+            System.out.print("Plotting " + i + "/" + xData.size() + "\r");
             data.add(this.xData.get(i), this.yData.get(i));
             minX = this.xData.get(i) < minX ? this.xData.get(i) : minX;
             maxX = this.xData.get(i) > maxX ? this.xData.get(i) : maxX;
@@ -65,6 +65,10 @@ public class Chart extends JFrame {
         trend.add(maxX, this.functionA * maxX + this.functionB);
         dataset.addSeries(trend);
 
+        XYSeries predicted = new XYSeries("Predicted Value");
+        predicted.add(observedValue, predictedValue);
+        dataset.addSeries(predicted);
+
         return dataset;
     }
 
@@ -72,8 +76,8 @@ public class Chart extends JFrame {
 
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "Linear Regression",
-                "Test",
-                "Test 2",
+                xLabel,
+                yLabel,
                 dataset,
                 PlotOrientation.VERTICAL,
                 true,
@@ -84,10 +88,12 @@ public class Chart extends JFrame {
         XYPlot plot = chart.getXYPlot();
 
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, Color.RED);
         renderer.setSeriesLinesVisible(0, false);
+        renderer.setSeriesLinesVisible(2, false);
 
+        renderer.setSeriesPaint(0, Color.RED);
         renderer.setSeriesPaint(1, Color.BLUE);
+        renderer.setSeriesPaint(2, Color.GREEN);
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.white);
@@ -108,48 +114,24 @@ public class Chart extends JFrame {
         return chart;
     }
 
-    public List<Double> getxData() {
-        return xData;
-    }
-
     public void setxData(List<Double> xData) {
         this.xData = xData;
-    }
-
-    public List<Double> getyData() {
-        return yData;
     }
 
     public void setyData(List<Double> yData) {
         this.yData = yData;
     }
 
-    public double getFunctionA() {
-        return functionA;
-    }
-
     public void setFunctionA(double functionA) {
         this.functionA = functionA;
-    }
-
-    public double getFunctionB() {
-        return functionB;
     }
 
     public void setFunctionB(double functionB) {
         this.functionB = functionB;
     }
 
-    public String getxLabel() {
-        return xLabel;
-    }
-
     public void setxLabel(String xLabel) {
         this.xLabel = xLabel;
-    }
-
-    public String getyLabel() {
-        return yLabel;
     }
 
     public void setyLabel(String yLabel) {

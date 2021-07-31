@@ -63,7 +63,9 @@ public class Commands {
                 dataAnalysis.standardDeviation(this.column, this.filter);
                 break;
             case "linear-regression":
-                dataAnalysis.regression(DatasetColumn.DEWP, DatasetColumn.TEMP, 5.0, this.filter);
+                DatasetColumn columnToBasePrediction = DatasetColumn.valueOf(command.split(" ")[2]);
+                Double observedValue = Double.parseDouble(command.split(" ")[3]);
+                dataAnalysis.regression(columnToBasePrediction, column, observedValue, this.filter);
                 break;
             default:
                 printHelp();
@@ -77,6 +79,9 @@ public class Commands {
         System.out.println();
         System.out.println("- " + PRINT_GREEN + "standard-deviation" + PRINT_YELLOW + " [column]" + PRINT_BLUE +  " [--filter stations]" + PRINT_COLOR_END);
         System.out.println("↳ Example: " + PRINT_GREEN + "standard-deviation DEWP --filter=1001499999" + PRINT_COLOR_END);
+        System.out.println();
+        System.out.println("- " + PRINT_GREEN + "linear-regression" + PRINT_YELLOW + " [column_to_predict] [column_to_base_prediction] [observed_value]" + PRINT_BLUE +  " [--filter stations]" + PRINT_COLOR_END);
+        System.out.println("↳ Example: " + PRINT_GREEN + "linear-regression TEMP DEWP 49.5 --filter=03005099999" + PRINT_COLOR_END);
         System.out.println();
         System.out.println("- " + PRINT_GREEN + "help" + PRINT_COLOR_END + ": show available commands");
         System.out.println();
